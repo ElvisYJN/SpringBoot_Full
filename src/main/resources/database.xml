@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+   http://www.springframework.org/schema/beans/spring-beans.xsd
+   http://www.springframework.org/schema/tx  
+   http://www.springframework.org/schema/tx/spring-tx.xsd 
+   http://www.springframework.org/schema/aop 
+   http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+	<!-- mysql库1 -->
+	<bean class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close" id="dataSource1" init-method="init" primary="true">
+		<property name="driverClassName" value="${database1.driveName}"></property>
+		<property name="url" value="${database1.url}"></property>
+		<property name="username" value="${database1.username}"></property>
+		<property name="password" value="${database1.password}"></property>
+		<property name="initialSize" value="${spring.datasource.initialSize}"></property>
+		<property name="minIdle" value="${spring.datasource.minIdle}"></property>
+		<property name="maxActive" value="${spring.datasource.maxActive}"></property>
+		<property name="maxWait" value="${spring.datasource.maxWait}" />
+		<property name="timeBetweenEvictionRunsMillis" value="${spring.datasource.timeBetweenEvictionRunsMillis}" />
+		<property name="testOnBorrow" value="${spring.datasource.testOnBorrow}" />
+		<property name="testOnReturn" value="${spring.datasource.testOnReturn}" />
+		<property name="poolPreparedStatements" value="${spring.datasource.poolPreparedStatements}" />
+		<property name="maxPoolPreparedStatementPerConnectionSize" value="${spring.datasource.maxPoolPreparedStatementPerConnectionSize}" />
+		<property name="defaultAutoCommit" value="true" />
+		<property name="validationQuery" value="${spring.datasource.validationQuery}" />
+		<property name="filters" value="${spring.datasource.filters}" />
+	</bean>
+
+	<!-- mysql库2 -->
+	<bean class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close" id="dataSource2" init-method="init" primary="true">
+		<property name="driverClassName" value="${database2.driveName}"></property>
+		<property name="url" value="${database2.url}"></property>
+		<property name="username" value="${database2.username}"></property>
+		<property name="password" value="${database2.password}"></property>
+		<property name="initialSize" value="${spring.datasource.initialSize}"></property>
+		<property name="minIdle" value="${spring.datasource.minIdle}"></property>
+		<property name="maxActive" value="${spring.datasource.maxActive}"></property>
+		<property name="maxWait" value="${spring.datasource.maxWait}" />
+		<property name="timeBetweenEvictionRunsMillis" value="${spring.datasource.timeBetweenEvictionRunsMillis}" />
+		<property name="testOnBorrow" value="${spring.datasource.testOnBorrow}" />
+		<property name="testOnReturn" value="${spring.datasource.testOnReturn}" />
+		<property name="poolPreparedStatements" value="${spring.datasource.poolPreparedStatements}" />
+		<property name="maxPoolPreparedStatementPerConnectionSize" value="${spring.datasource.maxPoolPreparedStatementPerConnectionSize}" />
+		<property name="defaultAutoCommit" value="true" />
+		<property name="validationQuery" value="${spring.datasource.validationQuery}" />
+		<property name="filters" value="${spring.datasource.filters}" />
+	</bean>
+
+	<bean class="com.xinhuanet.common.datasource.MultipleDataSource" id="dataSource">
+		<property name="targetDataSources">
+			<map key-type="java.lang.String">
+                <entry key="dataSource1" value-ref="dataSource1"></entry>
+                <entry key="dataSource2" value-ref="dataSource2"></entry>
+			</map>
+		</property>
+	</bean>
+
+	<bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sqlSessionFactory">
+        <property name="dataSource" ref="dataSource" />
+        <property name="typeAliasesPackage" value="com.xinhuanet.entity" />	<!-- 给包entity中起别名 -->
+        <property name="configLocation" value="classpath:mybatis_config.xml" />	<!-- 加载核心配置文件 -->
+	</bean>
+
+    <!-- 扫包中所有的接口，自动生成对应的代理对象 找id为sqlSessionFactory -->
+    <!--<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.xinhuanet.mapper" />
+    </bean>-->
+
+    <!-- 事务 -->
+	<!-- transaction support -->
+	<!-- PlatformTransactionMnager -->
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<!-- enable transaction annotation support -->
+	<tx:annotation-driven transaction-manager="txManager" />
+
+	<aop:aspectj-autoproxy />
+
+</beans>
